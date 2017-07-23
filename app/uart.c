@@ -57,7 +57,7 @@ uint8_t Debug_Uart_GetChar(void)
 	uint8_t c;
 
 	c = HAL_UART_Receive(&DebugUartHandle, &c, 1, DEBUG_UART_TIMEOUT);
-
+	
     return c;
 }
 
@@ -137,8 +137,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == USART3)
 	{
 		/* add your dealing code here */
-		
-		OSA_INFO("%c\n", receive_byte);
+		shell_uart_isr();
 	}
 }
 

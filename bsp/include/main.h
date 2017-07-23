@@ -69,6 +69,8 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_nucleo_144.h"
 
+#include "shell_console.h"
+
 #include "uart.h"
 
 /* USER CODE END Includes */

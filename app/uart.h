@@ -11,6 +11,7 @@
 #include "main.h"
 
 extern UART_HandleTypeDef  DebugUartHandle;
+extern uint8_t receive_byte;
 
 /* USER CODE BEGIN Private defines */
 #define DEBUG_UART                           USART3

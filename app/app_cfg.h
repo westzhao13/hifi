@@ -58,6 +58,9 @@
 #define  APP_CFG_TASK_EVENT1_PRIO               5u
 #define  APP_CFG_TASK_EQ0_PRIO                  6u
 #define  APP_CFG_TASK_EQ1_PRIO                  7u
+
+#define  SHELL_TAST_PRIO                        8u
+
 #define  OS_TASK_TMR_PRIO                (OS_LOWEST_PRIO - 2u)
 
 

@@ -58,14 +58,16 @@
 *********************************************************************************************************
 */
 
-                                                                /* --------------- APPLICATION GLOBALS ---------------- */
+/* --------------- APPLICATION GLOBALS ---------------- */
 static  OS_STK       AppTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
+static  OS_STK       ShellTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 
-                                                                /* --------------- SEMAPHORE TASK TEST ---------------- */
+
+/* --------------- SEMAPHORE TASK TEST ---------------- */
 static  OS_STK       AppTaskEvent0Stk[APP_CFG_TASK_OBJ_STK_SIZE];
-
 static  OS_STK       AppTaskEvent1Stk[APP_CFG_TASK_OBJ_STK_SIZE];
-                                                                /* ------------ FLOATING POINT TEST TASK -------------- */
+
+/* ------------ FLOATING POINT TEST TASK -------------- */
 static  OS_STK       AppTaskEq0FpStk[APP_CFG_TASK_EQ_STK_SIZE];
 static  OS_STK       AppTaskEq1FpStk[APP_CFG_TASK_EQ_STK_SIZE];
 
@@ -147,12 +149,13 @@ int main(void)
     OSInit();                                                   /* Init uC/OS-II.                                       */
 
 	MX_GPIO_Init();
-	Debug_Uart_Init(DEBUG_UART_BAUD);
+	shell_init();
 
 	OSA_INFO(" -> ------------------ system boot ---------------\n");
 	OSA_INFO(" -> test \n");
 
-	OSTaskCreateExt( AppTaskStart,                              /* Create the start task                                */
+	/*              Create the start task           */
+	OSTaskCreateExt( AppTaskStart,
                      0,
                     &AppTaskStartStk[APP_CFG_TASK_START_STK_SIZE - 1],
                      APP_CFG_TASK_START_PRIO,
@@ -161,17 +164,20 @@ int main(void)
                      APP_CFG_TASK_START_STK_SIZE,
                      0,
                     (OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
-
+	
 #if (OS_TASK_NAME_EN > 0)
     OSTaskNameSet(         APP_CFG_TASK_START_PRIO,
                   (INT8U *)"Start Task",
                            &err);
 #endif
-
-    OSStart();                                                  /* Start multitasking (i.e. give control to uC/OS-II).  */
-
-    while (DEF_ON) {                                            /* Should Never Get Here.                               */
-        ;
+	
+	/* Start multitasking (i.e. give control to uC/OS-II).  */
+    OSStart();
+	
+	/* Should Never Get Here.                               */
+    while (DEF_ON)
+	{
+    	OSA_ERROR(" -> program error occured!\n");
     }
 }
 
@@ -197,26 +203,31 @@ static  void  AppTaskStart (void *p_arg)
    (void)p_arg;
 
 #if 1
-    BSP_Init();                                                 /* Initialize BSP functions                             */
-    CPU_Init();                                                 /* Initialize the uC/CPU services                       */
-
+	/* Initialize BSP functions 							*/
+    BSP_Init();
+	
+	/* Initialize the uC/CPU services						*/
+    CPU_Init();
+	
 #if (OS_TASK_STAT_EN > 0)
-    OSStatInit();                                               /* Determine CPU capacity                               */
+	/* Determine CPU capacity								*/
+    OSStatInit();
 #endif
 
 #ifdef CPU_CFG_INT_DIS_MEAS_EN
     CPU_IntDisMeasMaxCurReset();
 #endif
+
 #endif
-    //APP_TRACE_DBG(("Creating Application Events\n\r"));
-    AppEventCreate();                                           /* Create Applicaiton kernel objects                    */
+	
+	/*               Create Applicaiton kernel objects                    */
+    AppEventCreate();
 
-    //APP_TRACE_DBG(("Creating Application Tasks\n\r"));
-    AppTaskCreate();                                            /* Create Application tasks                             */
+    /*                Create Application tasks                             */
+    AppTaskCreate();
 
-   // BSP_LED_Off(0u);
-
-    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
+	/* Task body, always written as an infinite loop.       */
+    while (DEF_TRUE) {
         //BSP_LED_Toggle(0u);
 		  HAL_GPIO_WritePin(GPIOB, LD2_Pin, 1);
 		  HAL_GPIO_WritePin(GPIOB, LD3_Pin, 0);
@@ -228,6 +239,16 @@ static  void  AppTaskStart (void *p_arg)
           //HAL_Delay(1000);
     }
 }
+
+static  void  ShellTastStart (void *p_arg)
+{
+	/* Task body, always written as an infinite loop.       */
+    while (DEF_TRUE) 
+	{
+		shell_main();
+    }
+}
+
 
 /*
 *********************************************************************************************************
@@ -251,7 +272,7 @@ static  void  AppTaskCreate (void)
     CPU_INT08U  err;
 #endif
 
-                                                                /* ----------- CREATE KERNEL EVENT TEST TASK ---------- */
+    /* ----------- CREATE KERNEL EVENT TEST TASK ---------- */
     OSTaskCreateExt( AppTaskEvent0,
                      0,
                     &AppTaskEvent0Stk[APP_CFG_TASK_OBJ_STK_SIZE - 1],
@@ -284,7 +305,7 @@ static  void  AppTaskCreate (void)
                            &err);
 #endif
 
-                                                                /* ------------- CREATE FLOATING POINT TASK ----------- */
+    /* ------------- CREATE FLOATING POINT TASK ----------- */
     OSTaskCreateExt( AppTaskEq0Fp,
                      0,
                     &AppTaskEq0FpStk[APP_CFG_TASK_EQ_STK_SIZE - 1],
@@ -316,6 +337,17 @@ static  void  AppTaskCreate (void)
                   (INT8U *)"FP  Equation 1",
                            &err);
 #endif
+
+#if (OS_TASK_NAME_EN > 0)
+
+	/*              Create the shell task           */
+	OSTaskCreate(ShellTastStart,
+                 0,
+                 &ShellTaskStartStk[APP_CFG_TASK_START_STK_SIZE - 1],
+                 SHELL_TAST_PRIO);
+
+#endif
+
 }
 
 
